@@ -2,7 +2,7 @@ using ECommons.Automation;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
 using PandorasBox.UI;
@@ -37,7 +37,7 @@ namespace PandorasBox.Features.UI
         {
             if (Svc.GameGui.GetAddonByName("CollectablesShop") != IntPtr.Zero)
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop").Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop");
                 if (!addon->IsVisible || !addon->IsFullyLoaded()) return;
 
                 var tradeButton = addon->GetNodeById(51);
@@ -92,7 +92,7 @@ namespace PandorasBox.Features.UI
 
         private void TryTradeAll()
         {
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop").Address;
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop");
             if (!addon->IsVisible) return;
 
             var list = addon->UldManager.NodeList[22]->GetAsAtkComponentList();
@@ -133,7 +133,7 @@ namespace PandorasBox.Features.UI
         {
             if (Svc.GameGui.GetAddonByName("CollectablesShop") != IntPtr.Zero)
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop").Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("CollectablesShop");
                 if (!addon->IsVisible) return;
 
                 var tradeButton = addon->UldManager.NodeList[2];

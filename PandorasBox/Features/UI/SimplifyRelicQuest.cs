@@ -54,7 +54,7 @@ namespace PandorasBox.Features.UI
             {
                 try
                 {
-                    var addon = (AddonSelectIconString*)args.Addon.Address;
+                    var addon = (AddonSelectIconString*)args.Addon;
 
                     var list = addon->PopupMenu.PopupMenu.List;
 
@@ -80,7 +80,7 @@ namespace PandorasBox.Features.UI
             {
                 try
                 {
-                    var addon = (AddonSelectString*)args.Addon.Address;
+                    var addon = (AddonSelectString*)args.Addon;
 
                     var list = addon->PopupMenu.PopupMenu.List;
 

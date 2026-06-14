@@ -3,7 +3,7 @@ using System.Diagnostics;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -443,7 +443,7 @@ public abstract class BaseFeature
         {
             try
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno", i).Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno", i);
                 if (addon == null) return null;
                 if (GenericHelpers.IsAddonReady(addon))
                 {
@@ -471,7 +471,7 @@ public abstract class BaseFeature
         {
             try
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno", i).Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SelectYesno", i);
                 if (addon == null) return null;
                 if (GenericHelpers.IsAddonReady(addon))
                 {
@@ -497,7 +497,7 @@ public abstract class BaseFeature
 
     public unsafe bool ZoneHasFlight()
     {
-        if (Svc.Objects.LocalPlayer is null) return false;
+        if (Svc.ClientState.LocalPlayer is null) return false;
         var territory = Svc.Data.Excel.GetSheet<TerritoryType>()?.GetRow(Svc.ClientState.TerritoryType);
         return territory?.TerritoryIntendedUse.RowId is 1 or 47 or 49;
     }

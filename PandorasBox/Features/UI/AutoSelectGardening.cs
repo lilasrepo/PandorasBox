@@ -8,7 +8,7 @@ using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
@@ -63,13 +63,13 @@ namespace PandorasBox.Features.UI
 
         private void RunFeature(IFramework framework)
         {
-            if (Svc.Objects.LocalPlayer == null) return;
+            if (Svc.ClientState.LocalPlayer == null) return;
             if (Config.IncludeFertilzing && (Svc.GameGui.GetAddonByName("InventoryExpansion") != IntPtr.Zero || Svc.GameGui.GetAddonByName("Inventory") != IntPtr.Zero || Svc.GameGui.GetAddonByName("InventoryLarge") != IntPtr.Zero) && !Fertilized)
             {
                 if (Config.SelectedFertilizer == 0) goto SoilSeeds;
-                var addon1 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("InventoryExpansion").Address;
-                var addon2 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Inventory").Address;
-                var addon3 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("InventoryLarge").Address;
+                var addon1 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("InventoryExpansion");
+                var addon2 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Inventory");
+                var addon3 = (AtkUnitBase*)Svc.GameGui.GetAddonByName("InventoryLarge");
 
                 var addon = addon1->IsVisible ? addon1 : addon2->IsVisible ? addon2 : addon3;
 
@@ -100,8 +100,8 @@ namespace PandorasBox.Features.UI
                                     var item = cont->GetInventorySlot(i);
 
                                     var ag = AgentInventoryContext.Instance();
-                                    ag->OpenForItemSlot(cont->Type, i, 0,AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId()); //test what a4 arg is
-                                    var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1).Address;
+                                    ag->OpenForItemSlot((uint)cont->Type, i, 0,AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId()); //test what a4 arg is
+                                    var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1);
                                     if (contextMenu == null) return;
                                     for (int p = 0; p <= contextMenu->AtkValuesCount; p++)
                                     {
@@ -221,7 +221,7 @@ namespace PandorasBox.Features.UI
                 }
 
             ClickItem:
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("HousingGardening").Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("HousingGardening");
 
                 if (!TaskManager.IsBusy)
                 {
@@ -262,7 +262,7 @@ namespace PandorasBox.Features.UI
         {
             if (SlotsFilled.Contains(i)) return true;
 
-            var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextIconMenu", 1).Address;
+            var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextIconMenu", 1);
 
             if (contextMenu is null || !contextMenu->IsVisible)
             {
@@ -272,27 +272,27 @@ namespace PandorasBox.Features.UI
                 var values = stackalloc AtkValue[5];
                 values[0] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 2
                 };
                 values[1] = new AtkValue()
                 {
-                    Type = AtkValueType.UInt,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt,
                     UInt = (uint)slot
                 };
                 values[2] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 0
                 };
                 values[3] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 0
                 };
                 values[4] = new AtkValue()
                 {
-                    Type = AtkValueType.UInt,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt,
                     UInt = 1
                 };
 
@@ -306,27 +306,27 @@ namespace PandorasBox.Features.UI
                 var values = stackalloc AtkValue[5];
                 values[0] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 0
                 };
                 values[1] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = itemIndex
                 };
                 values[2] = new AtkValue()
                 {
-                    Type = AtkValueType.UInt,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt,
                     UInt = value
                 };
                 values[3] = new AtkValue()
                 {
-                    Type = AtkValueType.UInt,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt,
                     UInt = 0
                 };
                 values[4] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     UInt = 0
                 };
 
@@ -340,13 +340,13 @@ namespace PandorasBox.Features.UI
 
         private bool CloseItemDetail()
         {
-            var itemDetail = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ItemDetail", 1).Address;
+            var itemDetail = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ItemDetail", 1);
             if (itemDetail is null || !itemDetail->IsVisible) return false;
 
             var values = stackalloc AtkValue[1];
             values[0] = new AtkValue()
             {
-                Type = AtkValueType.Int,
+                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                 Int = -1
             };
 
@@ -357,7 +357,7 @@ namespace PandorasBox.Features.UI
         internal static bool ConfirmYesNo()
         {
             if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied39]) return false;
-            var hg = (AtkUnitBase*)Svc.GameGui.GetAddonByName("HousingGardening").Address;
+            var hg = (AtkUnitBase*)Svc.GameGui.GetAddonByName("HousingGardening");
             if (hg == null) return false;
 
             if (hg->IsVisible && TryGetAddonByName<AddonSelectYesno>("SelectYesno", out var addon) &&

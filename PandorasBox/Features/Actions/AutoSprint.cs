@@ -3,7 +3,7 @@ using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using System.Linq;
@@ -39,9 +39,9 @@ namespace PandorasBox.Features.Actions
 
         private void RunFeature(IFramework framework)
         {
-            if (Svc.Objects.LocalPlayer == null) return;
+            if (Svc.ClientState.LocalPlayer == null) return;
 
-            if (!TerritoryInfo.Instance()->InSanctuary || MJIManager.Instance()->IsPlayerInSanctuary)
+            if (!TerritoryInfo.Instance()->InSanctuary || MJIManager.Instance()->IsPlayerInSanctuary != 0)
                 return;
 
             if (Config.ExcludeHousing)
@@ -56,7 +56,7 @@ namespace PandorasBox.Features.Actions
 
             var am = ActionManager.Instance();
             var isSprintReady = am->GetActionStatus(ActionType.GeneralAction, 4) == 0;
-            var hasSprintBuff = Svc.Objects.LocalPlayer?.StatusList.Any(x => x.StatusId == 50);
+            var hasSprintBuff = Svc.ClientState.LocalPlayer?.StatusList.Any(x => x.StatusId == 50);
 
             if (isSprintReady && IsMoving() && !TaskManager.IsBusy)
             {
@@ -70,7 +70,7 @@ namespace PandorasBox.Features.Actions
         {
             var am = ActionManager.Instance();
             var isSprintReady = am->GetActionStatus(ActionType.GeneralAction, 4) == 0;
-            var hasSprintBuff = Svc.Objects.LocalPlayer?.StatusList.Any(x => x.StatusId == 50);
+            var hasSprintBuff = Svc.ClientState.LocalPlayer?.StatusList.Any(x => x.StatusId == 50);
 
             if (isSprintReady && IsMoving())
             {

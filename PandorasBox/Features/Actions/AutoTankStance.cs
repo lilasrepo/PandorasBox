@@ -61,7 +61,7 @@ namespace PandorasBox.Features.Actions
                 TaskManager!.Enqueue(EnableStance, "FateSync");
         }
 
-        private void OnDutyStart(IDutyStateEventArgs args)
+        private void OnDutyStart(object? sender, ushort territoryType)
         {
             if (HasStance()) return;
             if (GameMain.Instance()->CurrentContentFinderConditionId == 0)
@@ -82,15 +82,15 @@ namespace PandorasBox.Features.Actions
 
         private void CheckParty(IFramework framework)
         {
-            if (Svc.Party.Length == 0 || Svc.Party.Any(x => x == null) || Svc.Objects.LocalPlayer == null || Svc.Condition[ConditionFlag.BetweenAreas]) return;
-            if (Config!.ActivateOnDeath && Svc.Party.Any(x => x != null && x.EntityId != Svc.Objects.LocalPlayer?.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z))))
-                MainTank = Svc.Party.First(x => x != null && x.EntityId != Svc.Objects.LocalPlayer.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z))).EntityId;
+            if (Svc.Party.Length == 0 || Svc.Party.Any(x => x == null) || Svc.ClientState.LocalPlayer == null || Svc.Condition[ConditionFlag.BetweenAreas]) return;
+            if (Config!.ActivateOnDeath && Svc.Party.Any(x => x != null && x.ObjectId != Svc.ClientState.LocalPlayer?.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z))))
+                MainTank = Svc.Party.First(x => x != null && x.ObjectId != Svc.ClientState.LocalPlayer.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z))).ObjectId;
             else
                 MainTank = 0;
 
-            if (Svc.Party.Any(x => x.EntityId == MainTank))
+            if (Svc.Party.Any(x => x.ObjectId == MainTank))
             {
-                if (MainTank != 0 && Svc.Party.First(x => x.EntityId == MainTank).GameObject!.IsDead && !Svc.Objects.LocalPlayer.StatusList.Any(x => Stances.Any(y => x.StatusId == y)))
+                if (MainTank != 0 && Svc.Party.First(x => x.ObjectId == MainTank).GameObject!.IsDead && !Svc.ClientState.LocalPlayer.StatusList.Any(x => Stances.Any(y => x.StatusId == y)))
                 {
                     EnableStance();
                     TaskManager!.Enqueue(() => TaskManager.Abort());
@@ -101,7 +101,7 @@ namespace PandorasBox.Features.Actions
         private static bool HasStance(uint classJobId = 0)
         {
             if (!Player.Available) return false;
-            ushort stance = (classJobId == 0 ? Svc.Objects.LocalPlayer?.ClassJob.RowId : classJobId) switch
+            ushort stance = (classJobId == 0 ? Svc.ClientState.LocalPlayer?.ClassJob.RowId : classJobId) switch
             {
                 1 or 19 => 79,
                 3 or 21 => 91,
@@ -111,13 +111,13 @@ namespace PandorasBox.Features.Actions
             };
 
             if (stance == 0) return true;
-            if (Svc.Objects.LocalPlayer!.StatusList.Any(x => x.StatusId == stance)) return true;
+            if (Svc.ClientState.LocalPlayer!.StatusList.Any(x => x.StatusId == stance)) return true;
             return false;
         }
 
         private bool EnableStance()
         {
-            if (Svc.Objects.LocalPlayer?.GetRole() is not CombatRole.Tank) return true;
+            if (Svc.ClientState.LocalPlayer?.GetRole() is not CombatRole.Tank) return true;
             if (Config!.OnlyInDuty && !IsInDuty()) return true;
 
             var am = ActionManager.Instance();
@@ -126,9 +126,9 @@ namespace PandorasBox.Features.Actions
             TaskManager.Enqueue(() =>
             {
                 if (Svc.Party.Length > Config.MaxParty) return true;
-                if (Config.NoOtherTanks && Svc.Party.Any(x => x.EntityId != Svc.Objects.LocalPlayer!.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z)))) return true;
+                if (Config.NoOtherTanks && Svc.Party.Any(x => x.ObjectId != Svc.ClientState.LocalPlayer!.GameObjectId && x.Statuses.Any(y => Stances.Any(z => y.StatusId == z)))) return true;
 
-                uint action = Svc.Objects.LocalPlayer!.ClassJob.RowId switch
+                uint action = Svc.ClientState.LocalPlayer!.ClassJob.RowId switch
                 {
                     1 or 19 => 28,
                     3 or 21 => 48,

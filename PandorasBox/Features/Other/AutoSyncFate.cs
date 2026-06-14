@@ -74,9 +74,9 @@ namespace PandorasBox.Features.Other
                 if (zone.ExVersion.RowId == 4 && Config.ExcludeEW) return;
                 if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.InCombat] && Config.ExcludeCombat) return;
                 // lsync does not work for DoH/DoL, so exclude them
-                if (Svc.Objects.LocalPlayer?.ClassJob.Value.ClassJobCategory is { RowId: 32 or 33 }) return;
+                if (Svc.ClientState.LocalPlayer?.ClassJob.Value.ClassJobCategory is { RowId: 32 or 33 }) return;
 
-                if (Svc.Objects.LocalPlayer?.Level > FateMaxLevel)
+                if (Svc.ClientState.LocalPlayer?.Level > FateMaxLevel)
                     Chat.SendMessage("/lsync");
             }
         }

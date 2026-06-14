@@ -5,7 +5,7 @@ using ECommons.Throttlers;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.MJI;
 using FFXIVClientStructs.FFXIV.Client.Game.UI;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
@@ -42,7 +42,7 @@ namespace PandorasBox.Features.Actions
 
         private bool GatheredOnIsland(ConditionFlag flag, bool value)
         {
-            return flag == ConditionFlag.OccupiedInQuestEvent && !value && MJIManager.Instance()->IsPlayerInSanctuary;
+            return flag == ConditionFlag.OccupiedInQuestEvent && !value && MJIManager.Instance()->IsPlayerInSanctuary != 0;
         }
 
         private void RunFeature(ConditionFlag flag, bool value)
@@ -55,7 +55,7 @@ namespace PandorasBox.Features.Actions
                 TaskManager.Enqueue(() =>
                 {
                     Svc.GameConfig.TryGet(Dalamud.Game.Config.UiControlOption.FlyingControlType, out uint type);
-                    if (Config.JumpAfterMount && Svc.Objects.LocalPlayer!.ClassJob.RowId != 18 && ZoneHasFlight())
+                    if (Config.JumpAfterMount && Svc.ClientState.LocalPlayer!.ClassJob.RowId != 18 && ZoneHasFlight())
                     {
                         TaskManager.EnqueueWithTimeout(() => Svc.Condition[ConditionFlag.Mounted], 5000);
                         TaskManager.EnqueueDelay(50);

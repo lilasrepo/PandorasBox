@@ -76,15 +76,73 @@ namespace PandorasBox.Features.UI
             {
                 return true;
             }
+            if (!GetAddonByID(invId)->IsVisible)
+            {
+                return null;
+            }
 
-            TaskManager.Enqueue(() => !Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Casting]);
-            TaskManager.Enqueue(() => ActionManager.Instance()->GetActionStatus(ActionType.Item, ItemId, Svc.Objects.LocalPlayer.GameObjectId) == 0);
-            TaskManager.Enqueue(() => ActionManager.Instance()->AnimationLock == 0);
-            TaskManager.Enqueue(() => OpenItem(ItemId));
+            var inventories = new List<InventoryType>
+            {
+                InventoryType.Inventory1,
+                InventoryType.Inventory2,
+                InventoryType.Inventory3,
+                InventoryType.Inventory4,
+            };
 
-            AgentInventoryContext.Instance()->UseItem(ItemId);
+            foreach (var inv in inventories)
+            {
+                var container = InventoryManager.Instance()->GetInventoryContainer(inv);
+                for (var i = 0; i < container->Size; i++)
+                {
+                    var item = container->GetInventorySlot(i);
 
-            return true;
+                    if (item->ItemId == ItemId)
+                    {
+                        var ag = AgentInventoryContext.Instance();
+                        ag->OpenForItemSlot((uint)container->Type, i,0, AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId());
+                        var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1);
+                        if (contextMenu != null)
+                        {
+                            var values = stackalloc AtkValue[5];
+                            values[0] = new AtkValue()
+                            {
+                                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
+                                Int = 0
+                            };
+                            values[1] = new AtkValue()
+                            {
+                                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
+                                UInt = 0
+                            };
+                            values[2] = new AtkValue()
+                            {
+                                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
+                                Int = 0
+                            };
+                            values[3] = new AtkValue()
+                            {
+                                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
+                                Int = 0
+                            };
+                            values[4] = new AtkValue()
+                            {
+                                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
+                                UInt = 0
+                            };
+                            contextMenu->FireCallback(5, values, true);
+
+                            TaskManager.Enqueue(() => !Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Casting]);
+                            TaskManager.Enqueue(() => ActionManager.Instance()->GetActionStatus(ActionType.Item, ItemId, Svc.ClientState.LocalPlayer.GameObjectId) == 0);
+                            TaskManager.Enqueue(() => ActionManager.Instance()->AnimationLock == 0);
+                            TaskManager.Enqueue(() => OpenItem(ItemId));
+
+                            return true;
+                        }
+                    }
+                }
+            }
+
+            return false;
         }
 
         public override void Disable()

@@ -4,7 +4,7 @@ using ECommons.Throttlers;
 using ECommons.UIHelpers.AddonMasterImplementations;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
 using PandorasBox.UI;
@@ -41,7 +41,7 @@ namespace PandorasBox.Features.UI
             {
                 if (Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
                 {
-                    var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1).Address;
+                    var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1);
                     if (!ptr->IsVisible || !ptr->IsFullyLoaded())
                         return;
 
@@ -377,16 +377,16 @@ namespace PandorasBox.Features.UI
 
             if (Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1).Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1);
                 var values = stackalloc AtkValue[2];
                 values[0] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 1
                 };
                 values[1] = new AtkValue()
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = section - 1
                 };
                 addon->FireCallback(2, values);
@@ -411,7 +411,7 @@ namespace PandorasBox.Features.UI
                 if (materializePTR == IntPtr.Zero)
                     return true;
 
-                var materalizeWindow = (AtkUnitBase*)materializePTR.Address;
+                var materalizeWindow = (AtkUnitBase*)materializePTR;
                 if (materalizeWindow == null)
                     return true;
 
@@ -437,16 +437,16 @@ namespace PandorasBox.Features.UI
             var values = stackalloc AtkValue[2];
             values[0] = new()
             {
-                Type = AtkValueType.Int,
+                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                 Int = 2,
             };
             values[1] = new()
             {
-                Type = AtkValueType.UInt,
+                Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.UInt,
                 UInt = 0,
             };
 
-            var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1).Address;
+            var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1);
             if (ptr == null) return true;
 
             ptr->FireCallback(2, values);
@@ -459,7 +459,7 @@ namespace PandorasBox.Features.UI
             OverlayWindow = null!;
             if (Svc.GameGui.GetAddonByName("Materialize", 1) != IntPtr.Zero)
             {
-                var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1).Address;
+                var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Materialize", 1);
 
                 var node = ptr->UldManager.NodeList[2];
 

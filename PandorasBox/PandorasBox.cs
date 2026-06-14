@@ -38,11 +38,8 @@ public class PandorasBox : IDalamudPlugin
         _ = framework.RunOnFrameworkThread(() =>
         {
             ECommonsMain.Init(pluginInterface, P, ECommons.Module.All);
-            sheetManager = new(pluginInterface, Svc.Data.GameData, new()
-            {
-                BuildItemInfoCache = true,
-
-            });
+            // TODO(api12): AllaganLib.GameSheets 1.3.12 SheetManager ctor signature differs from 2.x;
+            // sheetManager not referenced elsewhere in PandorasBox, so initialization skipped.
             Initialize();
         });
     }

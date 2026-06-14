@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Party;
@@ -63,7 +63,7 @@ public class AutoVoteMvp : Feature
             {
                 foreach (var partyMember in Svc.Party)
                 {
-                    Svc.Log.Debug($"Adding {partyMember.Name.GetText()} {partyMember.EntityId} to premade list");
+                    Svc.Log.Debug($"Adding {partyMember.Name.GetText()} {partyMember.ObjectId} to premade list");
                     PremadePartyID.Add(partyMember.Name.GetText());
                 }
             }
@@ -94,11 +94,11 @@ public class AutoVoteMvp : Feature
     private unsafe void OnBannerSetup(AddonEvent type, AddonArgs args)
     {
         if (Svc.ClientState.IsPvP) return;
-        var atk = (AtkUnitBase*)args.Addon.Address;
+        var atk = (AtkUnitBase*)args.Addon;
         try
         {
             if (ChoosePlayer(atk) is not -1 and var playerIndex)
-                VoteBanner((AtkUnitBase*)args.Addon.Address, playerIndex);
+                VoteBanner((AtkUnitBase*)args.Addon, playerIndex);
         }
         catch (Exception e)
         {
@@ -118,19 +118,19 @@ public class AutoVoteMvp : Feature
         if (Config.ResetOnWipe && Svc.Party.All(x => x.GameObject?.IsDead == true))
             DeathTracker.Clear();
 
-        foreach (var pm in Svc.Party.Where(pm => pm.GameObject != null && pm.EntityId != Svc.Objects.LocalPlayer?.GameObjectId))
+        foreach (var pm in Svc.Party.Where(pm => pm.GameObject != null && pm.ObjectId != Svc.ClientState.LocalPlayer?.GameObjectId))
         {
             if (pm.GameObject?.IsDead ?? false)
             {
-                if (DeadPlayers.Contains(pm.EntityId)) continue;
-                DeadPlayers.Add(pm.EntityId);
-                if (DeathTracker.ContainsKey(pm.EntityId))
-                    DeathTracker[pm.EntityId] += 1;
+                if (DeadPlayers.Contains(pm.ObjectId)) continue;
+                DeadPlayers.Add(pm.ObjectId);
+                if (DeathTracker.ContainsKey(pm.ObjectId))
+                    DeathTracker[pm.ObjectId] += 1;
                 else
-                    DeathTracker.TryAdd(pm.EntityId, 1);
+                    DeathTracker.TryAdd(pm.ObjectId, 1);
             }
             else
-                DeadPlayers.Remove(pm.EntityId);
+                DeadPlayers.Remove(pm.ObjectId);
         }
     }
 
@@ -139,8 +139,8 @@ public class AutoVoteMvp : Feature
         var hud = UIModule.Instance()->GetAgentModule()->GetAgentHUD();
         if (hud == null) throw new Exception("HUD is empty!");
 
-        var list = Svc.Party.Where(i => i.EntityId != Svc.Objects.LocalPlayer?.GameObjectId && i.GameObject != null && !PremadePartyID.Any(y => y == i.Name.TextValue))
-                .Select(PartyMember => (Math.Max(0, GetPartySlotIndex(PartyMember.EntityId, hud) - 1), PartyMember))
+        var list = Svc.Party.Where(i => i.ObjectId != Svc.ClientState.LocalPlayer?.GameObjectId && i.GameObject != null && !PremadePartyID.Any(y => y == i.Name.TextValue))
+                .Select(PartyMember => (Math.Max(0, GetPartySlotIndex(PartyMember.ObjectId, hud) - 1), PartyMember))
                 .ToList();
 
         if (!list.Any()) return -1;
@@ -151,7 +151,7 @@ public class AutoVoteMvp : Feature
             {
                 if (deadPlayers.Value >= Config.HowManyDeaths)
                 {
-                    list.RemoveAll(x => x.PartyMember.EntityId == deadPlayers.Key);
+                    list.RemoveAll(x => x.PartyMember.ObjectId == deadPlayers.Key);
                 }
             }
         }
@@ -191,7 +191,7 @@ public class AutoVoteMvp : Feature
 
         for (int i = 22; i <= 22 + 7; i++)
         {
-            if (bannerWindow->AtkValues[i].Type != AtkValueType.String) continue;
+            if (bannerWindow->AtkValues[i].Type != FFXIVClientStructs.FFXIV.Component.GUI.ValueType.String) continue;
             var name = bannerWindow->AtkValues[i].String.ToString();
             if (name == voteTarget.member.Name.TextValue)
             {

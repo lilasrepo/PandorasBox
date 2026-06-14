@@ -12,8 +12,6 @@ using PandorasBox.Helpers;
 using System;
 using System.Collections.Generic;
 using static ECommons.GenericHelpers;
-using ValueType = FFXIVClientStructs.FFXIV.Component.GUI;
-
 namespace PandorasBox.Features.Actions
 {
     internal unsafe class HotbarMapDecipher : Feature
@@ -47,7 +45,7 @@ namespace PandorasBox.Features.Actions
         {
             if (actionType == 2)
             {
-                if (ActionManager.Instance()->GetActionStatus(ActionType.Item, actionID, Svc.PlayerState.ContentId) != 0)
+                if (ActionManager.Instance()->GetActionStatus(ActionType.Item, actionID, Svc.ClientState.LocalContentId) != 0)
                 {
                     TaskManager.Abort();
                     return UseActionHook!.Original(actionManager, actionType, actionID, targetObjectID, param, useType, pvp, isGroundTarget);
@@ -105,8 +103,8 @@ namespace PandorasBox.Features.Actions
                     if (item->ItemId == ItemId)
                     {
                         var ag = AgentInventoryContext.Instance();
-                        ag->OpenForItemSlot(container->Type, i,0, AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId());
-                        var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1).Address;
+                        ag->OpenForItemSlot((uint)container->Type, i,0, AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId());
+                        var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1);
                         if (contextMenu != null)
                         {
                             var contextAgent = AgentInventoryContext.Instance();
@@ -115,7 +113,7 @@ namespace PandorasBox.Features.Actions
                             var loops = 0;
                             foreach (var contextObj in contextAgent->EventParams)
                             {
-                                if (contextObj.Type == AtkValueType.String)
+                                if (contextObj.Type == FFXIVClientStructs.FFXIV.Component.GUI.ValueType.String)
                                 {
                                     var label = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(contextObj.String));
 
@@ -130,27 +128,27 @@ namespace PandorasBox.Features.Actions
                                 var values = stackalloc AtkValue[5];
                                 values[0] = new AtkValue()
                                 {
-                                    Type = AtkValueType.Int,
+                                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                                     Int = 0
                                 };
                                 values[1] = new AtkValue()
                                 {
-                                    Type = AtkValueType.Int,
+                                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                                     Int = indexDecipher,
                                 };
                                 values[2] = new AtkValue()
                                 {
-                                    Type = AtkValueType.Int,
+                                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                                     Int = 0
                                 };
                                 values[3] = new AtkValue()
                                 {
-                                    Type = AtkValueType.Int,
+                                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                                     Int = 0
                                 };
                                 values[4] = new AtkValue()
                                 {
-                                    Type = AtkValueType.Int,
+                                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                                     UInt = 0
                                 };
                                 contextMenu->FireCallback(5, values, true);

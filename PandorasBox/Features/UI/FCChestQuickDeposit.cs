@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Dalamud.Game.Gui.ContextMenu;
 using Dalamud.Game.Text.SeStringHandling;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
@@ -292,7 +292,7 @@ namespace PandorasBox.Features.UI
 
         private unsafe IntPtr AgentById(AgentId id)
         {
-            var uiModule = (UIModule*)Svc.GameGui.GetUIModule().Address;
+            var uiModule = (UIModule*)Svc.GameGui.GetUIModule();
             var agents = uiModule->GetAgentModule();
             var agent = agents->GetAgentByInternalId(id);
             return (IntPtr)agent;

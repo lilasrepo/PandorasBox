@@ -1,10 +1,15 @@
-using Dalamud.Bindings.ImGui;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Numerics;
+using ImGuiNET;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
-using Dalamud.Game.Chat;
 using Dalamud.Game.ClientState.Conditions;
 using Dalamud.Game.ClientState.Objects.SubKinds;
 using Dalamud.Game.Text;
+using Dalamud.Game.Text.SeStringHandling;
+using SeString = Dalamud.Game.Text.SeStringHandling.SeString;
 using Dalamud.Hooking;
 using Dalamud.Interface.Colors;
 using Dalamud.Interface.Components;
@@ -138,7 +143,10 @@ namespace PandorasBox.Features.Other
             (39591, new uint[]{846, 844, 824, 823}),                                         // Ophiotauroskin
          };
 
-        private Hook<AddonGathering.Delegates.NotifyQuickGatherState> quickGatherToggle = null!;
+        // API12 forward-port: AddonGathering.Delegates.NotifyQuickGatherState is
+        // game-7.5 only; B1 stub the field (and uses below) to lose only the
+        // quick-gather checkbox-toggle subfeature.
+        // private Hook<AddonGathering.Delegates.NotifyQuickGatherState> quickGatherToggle = null!;
 
         internal Vector4 DarkTheme = new Vector4(0.26f, 0.26f, 0.26f, 1f);
         internal Vector4 LightTheme = new Vector4(0.97f, 0.87f, 0.75f, 1f);
@@ -228,7 +236,8 @@ namespace PandorasBox.Features.Other
             overlay = new Overlays(this);
             Config = LoadConfig<Configs>() ?? new Configs();
 
-            quickGatherToggle ??= Svc.Hook.HookFromAddress<AddonGathering.Delegates.NotifyQuickGatherState>((nint)AddonGathering.MemberFunctionPointers.NotifyQuickGatherState, QuickGatherToggle);
+            // API12 forward-port: quickGatherToggle hook stubbed (game-7.5 only)
+            // quickGatherToggle ??= Svc.Hook.HookFromAddress<AddonGathering.Delegates.NotifyQuickGatherState>((nint)AddonGathering.MemberFunctionPointers.NotifyQuickGatherState, QuickGatherToggle);
 
             Svc.AddonLifecycle.RegisterListener(AddonEvent.PostReceiveEvent, "Gathering", OnEvent);
             Svc.AddonLifecycle.RegisterListener(AddonEvent.PostSetup, "Gathering", AddonSetup);
@@ -241,7 +250,7 @@ namespace PandorasBox.Features.Other
 
         private void UpdateIntegrity(IFramework framework)
         {
-            var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering").Address;
+            var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering");
             if (addon != null)
             {
                 CurrentIntegrity = addon->AtkValues[109].UInt;
@@ -249,9 +258,9 @@ namespace PandorasBox.Features.Other
             }
         }
 
-        private void CheckRevisit(IHandleableChatMessage handler)
+        private void CheckRevisit(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled)
         {
-            if (handler.LogKind is (XivChatType)2107 && CurrentIntegrity == 0)
+            if (type is (XivChatType)2107 && CurrentIntegrity == 0)
             {
                 TaskManager.Abort();
                 TaskManager.EnqueueDelay(1000);
@@ -263,13 +272,13 @@ namespace PandorasBox.Features.Other
         {
             P.Ws.RemoveWindow(overlay!);
             SaveConfig(Config);
-            quickGatherToggle?.Disable();
+            // quickGatherToggle?.Disable();  // API12 forward-port: stubbed (game-7.5)
             Svc.AddonLifecycle.UnregisterListener(OnEvent);
             Svc.AddonLifecycle.UnregisterListener(AddonSetup);
             Svc.Chat.ChatMessage -= CheckRevisit;
             Svc.Framework.Update -= UpdateIntegrity;
 
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
             if (addon != null)
             {
                 addon->GetNodeById(38)->ToggleVisibility(true);
@@ -285,7 +294,7 @@ namespace PandorasBox.Features.Other
 
         public override void Dispose()
         {
-            quickGatherToggle?.Dispose();
+            // quickGatherToggle?.Dispose();  // API12 forward-port: stubbed (game-7.5)
             base.Dispose();
         }
 
@@ -293,7 +302,7 @@ namespace PandorasBox.Features.Other
         {
             if (Svc.GameGui.GetAddonByName("Gathering") != nint.Zero)
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
                 if (addon == null) return;
                 if (!addon->IsVisible) return;
 
@@ -371,7 +380,7 @@ namespace PandorasBox.Features.Other
                     ImGui.EndTooltip();
                 }
                 var language = Svc.ClientState.ClientLanguage;
-                switch (Svc.Objects.LocalPlayer!.ClassJob.RowId)
+                switch (Svc.ClientState.LocalPlayer!.ClassJob.RowId)
                 {
                     case 17:
                         ImGui.NextColumn();
@@ -498,7 +507,7 @@ namespace PandorasBox.Features.Other
         {
             try
             {
-                var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
+                var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
 
                 if (addon != null && Config.Gathering)
                 {
@@ -533,7 +542,7 @@ namespace PandorasBox.Features.Other
                             {
                                 var diffIntegrity = MaxIntegrity - CurrentIntegrity;
 
-                                if (Config.GPSolidReason <= Svc.Objects.LocalPlayer!.CurrentGp && Config.UseSolidReason && CanUseIntegrityAction() && diffIntegrity >= 2)
+                                if (Config.GPSolidReason <= Svc.ClientState.LocalPlayer!.CurrentGp && Config.UseSolidReason && CanUseIntegrityAction() && diffIntegrity >= 2)
                                 {
                                     TaskManager.BeginStack();
                                     TaskManager.Enqueue(() => UseIntegrityAction());
@@ -545,7 +554,7 @@ namespace PandorasBox.Features.Other
                             });
                             TaskManager.Enqueue(() =>
                             {
-                                if (Config.GP100Yield <= Svc.Objects.LocalPlayer!.CurrentGp && Config.Use100GPYield)
+                                if (Config.GP100Yield <= Svc.ClientState.LocalPlayer!.CurrentGp && Config.Use100GPYield)
                                 {
                                     TaskManager.InsertMulti([new(() => Use100GPSkill()), new(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction])]);
                                 }
@@ -566,7 +575,7 @@ namespace PandorasBox.Features.Other
 
         private bool CanUseIntegrityAction()
         {
-            switch (Svc.Objects.LocalPlayer!.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer!.ClassJob.RowId)
             {
                 case 17:
                     return ActionManager.Instance()->GetActionStatus(ActionType.Action, 215) == 0;
@@ -584,7 +593,7 @@ namespace PandorasBox.Features.Other
                 TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                 TaskManager.Enqueue(() =>
                 {
-                    var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
+                    var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
 
                     if (addon == null) return;
 
@@ -621,7 +630,7 @@ namespace PandorasBox.Features.Other
 
                         Svc.Log.Debug($"Boon Chances: {string.Join(", ", boonChances)}");
 
-                        if (Config.UseLuck && NodeHasHiddenItems(ids) && Svc.Objects.LocalPlayer!.CurrentGp >= Config.GPLuck && !HiddenRevealed)
+                        if (Config.UseLuck && NodeHasHiddenItems(ids) && Svc.ClientState.LocalPlayer!.CurrentGp >= Config.GPLuck && !HiddenRevealed)
                         {
                             TaskManager.Enqueue(() => UseLuck(), "UseLuck");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
@@ -632,36 +641,36 @@ namespace PandorasBox.Features.Other
 
                         HiddenRevealed = false;
 
-                        if (Config.GPTidings <= Svc.Objects.LocalPlayer!.CurrentGp && Config.UseTidings && (boonChances.TryGetValue(lastGatheredIndex, out var val) && val >= Config.GatherersBoon || boonChances.Where(x => x.Value != 0).All(x => x.Value >= Config.GatherersBoon)))
+                        if (Config.GPTidings <= Svc.ClientState.LocalPlayer!.CurrentGp && Config.UseTidings && (boonChances.TryGetValue(lastGatheredIndex, out var val) && val >= Config.GatherersBoon || boonChances.Where(x => x.Value != 0).All(x => x.Value >= Config.GatherersBoon)))
                         {
                             TaskManager.Enqueue(() => UseTidings(), "UseTidings");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                         }
 
-                        if (Config.GP500Yield <= Svc.Objects.LocalPlayer.CurrentGp && Config.Use500GPYield)
+                        if (Config.GP500Yield <= Svc.ClientState.LocalPlayer.CurrentGp && Config.Use500GPYield)
                         {
                             TaskManager.Enqueue(() => Use500GPSkill(), "Use500GPSetup");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                         }
 
-                        if (Config.GP100Yield <= Svc.Objects.LocalPlayer.CurrentGp && Config.Use100GPYield)
+                        if (Config.GP100Yield <= Svc.ClientState.LocalPlayer.CurrentGp && Config.Use100GPYield)
                         {
                             TaskManager.Enqueue(() => Use100GPSkill(), "Use100GPSetup");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                         }
 
-                        if (Config.GPGatherChanceUp <= Svc.Objects.LocalPlayer.CurrentGp && Config.GatherChanceUp)
+                        if (Config.GPGatherChanceUp <= Svc.ClientState.LocalPlayer.CurrentGp && Config.GatherChanceUp)
                         {
 
                         }
 
-                        if (Config.GPGivingLand <= Svc.Objects.LocalPlayer.CurrentGp && Config.UseGivingLand)
+                        if (Config.GPGivingLand <= Svc.ClientState.LocalPlayer.CurrentGp && Config.UseGivingLand)
                         {
                             TaskManager.Enqueue(() => UseGivingLand(), "UseGivingSetup");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                         }
 
-                        if (Config.GPTwelvesBounty <= Svc.Objects.LocalPlayer.CurrentGp && Config.UseTwelvesBounty)
+                        if (Config.GPTwelvesBounty <= Svc.ClientState.LocalPlayer.CurrentGp && Config.UseTwelvesBounty)
                         {
                             TaskManager.Enqueue(() => UseTwelvesBounty(), "UseTwelvesSetup");
                             TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
@@ -848,7 +857,7 @@ namespace PandorasBox.Features.Other
             TaskManager!.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
             TaskManager.Enqueue(() =>
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
                 if (addon is null) return;
 
                 if (addon is null) return;
@@ -862,7 +871,7 @@ namespace PandorasBox.Features.Other
 
         private void UseLuck()
         {
-            switch (Svc.Objects.LocalPlayer!.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer!.ClassJob.RowId)
             {
                 case 17: //BTN
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 4095) == 0)
@@ -889,7 +898,7 @@ namespace PandorasBox.Features.Other
 
             }
             if (Seeds.Any(x => ids.Any(y => x.ItemId == y))) return true;
-            var NodeId = Svc.Objects.LocalPlayer?.TargetObject?.BaseId;
+            var NodeId = Svc.ClientState.LocalPlayer?.TargetObject?.DataId;
             var baseNode = Svc.Data.GetExcelSheet<GatheringPoint>()?.Where(x => x.RowId == NodeId).First().GatheringPointBase.Value;
             Svc.Log.Debug($"{baseNode?.RowId}");
             if (Items.Any(x => x.NodeId == baseNode?.RowId)) return true;
@@ -901,7 +910,7 @@ namespace PandorasBox.Features.Other
 
         private bool? UseGatherChanceUp()
         {
-            switch (Svc.Objects.LocalPlayer!.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer!.ClassJob.RowId)
             {
                 case 17:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 220) == 0)
@@ -921,7 +930,7 @@ namespace PandorasBox.Features.Other
         }
         private bool? UseIntegrityAction()
         {
-            switch (Svc.Objects.LocalPlayer!.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer!.ClassJob.RowId)
             {
                 case 17:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 215) == 0)
@@ -942,20 +951,20 @@ namespace PandorasBox.Features.Other
 
         private bool? UseGivingLand()
         {
-            switch (Svc.Objects.LocalPlayer?.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer?.ClassJob.RowId)
             {
                 case 17:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 4590) == 0)
                     {
                         ActionManager.Instance()->UseAction(ActionType.Action, 4590);
-                        TaskManager.Insert(() => Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == 1802));
+                        TaskManager.Insert(() => Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == 1802));
                     }
                     break;
                 case 16:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 4589) == 0)
                     {
                         ActionManager.Instance()->UseAction(ActionType.Action, 4589);
-                        TaskManager.Insert(() => Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == 1802));
+                        TaskManager.Insert(() => Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == 1802));
                     }
                     break;
             }
@@ -965,20 +974,20 @@ namespace PandorasBox.Features.Other
 
         private bool? UseTwelvesBounty()
         {
-            switch (Svc.Objects.LocalPlayer?.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer?.ClassJob.RowId)
             {
                 case 17:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 282) == 0)
                     {
                         ActionManager.Instance()->UseAction(ActionType.Action, 282);
-                        TaskManager.Insert(() => Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == 825));
+                        TaskManager.Insert(() => Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == 825));
                     }
                     break;
                 case 16:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 280) == 0)
                     {
                         ActionManager.Instance()->UseAction(ActionType.Action, 280);
-                        TaskManager.Insert(() => Svc.Objects.LocalPlayer.StatusList.Any(x => x.StatusId == 825));
+                        TaskManager.Insert(() => Svc.ClientState.LocalPlayer.StatusList.Any(x => x.StatusId == 825));
                     }
                     break;
             }
@@ -988,7 +997,7 @@ namespace PandorasBox.Features.Other
 
         private void Use100GPSkill()
         {
-            if (Svc.Objects.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 1286 || x.StatusId == 756))
+            if (Svc.ClientState.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 1286 || x.StatusId == 756))
                 return;
 
             switch (chara.ClassJob.RowId)
@@ -1022,7 +1031,7 @@ namespace PandorasBox.Features.Other
 
         private void Use500GPSkill()
         {
-            if (Svc.Objects.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 219))
+            if (Svc.ClientState.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 219))
                 return;
 
             switch (chara.ClassJob.RowId)
@@ -1047,7 +1056,7 @@ namespace PandorasBox.Features.Other
 
         private void UseTidings()
         {
-            if (Svc.Objects.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 2667))
+            if (Svc.ClientState.LocalPlayer is not IPlayerCharacter chara || chara.StatusList.Any(x => x.StatusId == 2667))
                 return;
 
             switch (chara.ClassJob.RowId)
@@ -1073,15 +1082,15 @@ namespace PandorasBox.Features.Other
         private void QuickGatherToggle(AddonGathering* thisPtr)
         {
             if (thisPtr == null && Svc.GameGui.GetAddonByName("Gathering") != nint.Zero)
-                thisPtr = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
+                thisPtr = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
 
             thisPtr->QuickGatheringComponentCheckBox->AtkComponentButton.Flags ^= 0x40000;
-            quickGatherToggle?.Original(thisPtr);
+            // quickGatherToggle?.Original(thisPtr);  // API12 forward-port: stubbed (game-7.5)
         }
 
         private bool? UseWisdom()
         {
-            switch (Svc.Objects.LocalPlayer?.ClassJob.RowId)
+            switch (Svc.ClientState.LocalPlayer?.ClassJob.RowId)
             {
                 case 17:
                     if (ActionManager.Instance()->GetActionStatus(ActionType.Action, 26522) == 0)

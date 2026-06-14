@@ -28,7 +28,7 @@ namespace PandorasBox.Features.UI
 
         private void PostSetup(AddonEvent type, AddonArgs args)
         {
-            var addon = (AtkUnitBase*)args.Addon.Address;
+            var addon = (AtkUnitBase*)args.Addon;
             var seString = MemoryHelper.ReadSeStringNullTerminated(new IntPtr(addon->AtkValues[0].String));
             if (seString.Payloads.Count < 3 || seString.Payloads[2] is not TextPayload payload2)
             {
@@ -46,7 +46,7 @@ namespace PandorasBox.Features.UI
                 var values = stackalloc AtkValue[5];
                 values[0] = new AtkValue
                 {
-                    Type = AtkValueType.Int,
+                    Type = FFXIVClientStructs.FFXIV.Component.GUI.ValueType.Int,
                     Int = 0
                 };
                 addon->FireCallback(1, values, true);

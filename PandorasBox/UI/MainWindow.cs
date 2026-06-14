@@ -6,9 +6,9 @@ using Dalamud.Utility;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using PandorasBox.Features;
-using PandorasBox.Features.ChatFeature;
+// using PandorasBox.Features.ChatFeature; // TODO(api12): namespace removed with disabled chat features
 using PandorasBox.FeaturesSetup;
 using PandorasBox.IPC;
 using PunishLib.ImGuiMethods;
@@ -144,7 +144,7 @@ internal class MainWindow : Window
 
                     if (ThreadLoadImageHandler.TryGetTextureWrap(imagePath, out var logo))
                     {
-                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.Handle, new(125f.Scale(), 125f.Scale())); });
+                        ImGuiEx.LineCentered("###Logo", () => { ImGui.Image(logo.ImGuiHandle, new(125f.Scale(), 125f.Scale())); });
 
                     }
 
@@ -310,7 +310,8 @@ internal class MainWindow : Window
 
         foreach (var feature in features)
         {
-            using (ImRaii.Disabled(feature.FeatureDisabled || feature.GetType() == typeof(AutoTPCoords) && !TeleporterIPC.IsEnabled()))
+            // TODO(api12): AutoTPCoords compile-removed (depends on Dalamud.Game.Chat namespace, API15-only)
+            using (ImRaii.Disabled(feature.FeatureDisabled))
             {
                 var enabled = feature.Enabled;
                 if (ImGui.Checkbox($"###{feature.Name}", ref enabled))

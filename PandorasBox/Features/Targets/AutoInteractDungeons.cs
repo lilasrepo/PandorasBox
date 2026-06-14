@@ -4,7 +4,7 @@ using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
 using FFXIVClientStructs.FFXIV.Client.Game.Control;
 using FFXIVClientStructs.FFXIV.Client.Game.Object;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
@@ -90,7 +90,7 @@ namespace PandorasBox.Features.Targets
                 TaskManager.Abort();
                 return;
             }
-            if (Svc.Objects.LocalPlayer == null) return;
+            if (Svc.ClientState.LocalPlayer == null) return;
 
             if (GameMain.Instance()->CurrentContentFinderConditionId > 0)
             {
@@ -106,9 +106,9 @@ namespace PandorasBox.Features.Targets
 
                 if (Svc.Targets.Target != null)
                 {
-                    if (nearbyNodes.Any(x => x.BaseId == Svc.Targets.Target.BaseId))
+                    if (nearbyNodes.Any(x => x.DataId == Svc.Targets.Target.DataId))
                     {
-                        var nearestNode = nearbyNodes.First(x => x.BaseId == Svc.Targets.Target.BaseId);
+                        var nearestNode = nearbyNodes.First(x => x.DataId == Svc.Targets.Target.DataId);
                         var baseObj = (GameObject*)nearestNode.Address;
 
                         if (!TargetSystem.Instance()->IsObjectInViewRange(baseObj) || !TargetSystem.Instance()->IsObjectOnScreen(baseObj)) return;

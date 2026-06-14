@@ -1,7 +1,7 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Chat;
+using ImGuiNET;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling;
+using SeString = Dalamud.Game.Text.SeStringHandling.SeString;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
 using ECommons;
 using ECommons.DalamudServices;
@@ -58,14 +58,14 @@ namespace PandorasBox.Features.ChatFeature
             XivChatType.RetainerSale
         };
 
-        private void OnChatMessage(IHandleableChatMessage handler)
+        private void OnChatMessage(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled)
         {
             var hasMapLink = false;
             float coordX = 0;
             float coordY = 0;
             float scale = 100;
             MapLinkPayload maplinkPayload = null!;
-            foreach (var payload in handler.Message.Payloads)
+            foreach (var payload in message.Payloads)
             {
                 if (payload is MapLinkPayload mapLinkload)
                 {
@@ -82,12 +82,12 @@ namespace PandorasBox.Features.ChatFeature
                 }
             }
 
-            var messageText = handler.Message.TextValue;
+            var messageText = message.TextValue;
             if (hasMapLink)
             {
                 var newMapLinkMessage = new MapLinkMessage(
-                        handler.LogKind,
-                        handler.Sender.TextValue,
+                        type,
+                        sender.TextValue,
                         messageText,
                         coordX,
                         coordY,
@@ -98,7 +98,7 @@ namespace PandorasBox.Features.ChatFeature
                     );
 
                 var filteredOut = false;
-                if (handler.Sender.TextValue.ToLower() == "sonar" && !Config.IncludeSonar)
+                if (sender.TextValue.ToLower() == "sonar" && !Config.IncludeSonar)
                     filteredOut = true;
 
                 var alreadyInList = MapLinkMessageList.Any(w =>
@@ -116,7 +116,7 @@ namespace PandorasBox.Features.ChatFeature
                 });
 
                 if (alreadyInList) filteredOut = true;
-                if (!filteredOut && Config.FilteredChannels.IndexOf(handler.LogKind) != -1) filteredOut = true;
+                if (!filteredOut && Config.FilteredChannels.IndexOf(type) != -1) filteredOut = true;
                 if (!filteredOut)
                 {
                     if (Config.IgnorePOS && newMapLinkMessage.Text.Contains("Z:")) return;

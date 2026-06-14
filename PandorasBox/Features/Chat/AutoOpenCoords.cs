@@ -1,11 +1,12 @@
-using Dalamud.Bindings.ImGui;
-using Dalamud.Game.Chat;
+using ImGuiNET;
 using Dalamud.Game.Text;
 using Dalamud.Game.Text.SeStringHandling.Payloads;
+using SeString = Dalamud.Game.Text.SeStringHandling.SeString;
 using ECommons;
 using ECommons.DalamudServices;
 using ECommons.GameHelpers;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using System;
@@ -56,14 +57,14 @@ internal class AutoOpenCoords : Feature
         XivChatType.RetainerSale
     };
 
-    private void OnChatMessage(IHandleableChatMessage handler)
+    private void OnChatMessage(XivChatType type, int senderId, ref SeString sender, ref SeString message, ref bool isHandled)
     {
         var hasMapLink = false;
         float coordX = 0;
         float coordY = 0;
         float scale = 100;
         MapLinkPayload maplinkPayload = null!;
-        foreach (var payload in handler.Message.Payloads)
+        foreach (var payload in message.Payloads)
         {
             if (payload is MapLinkPayload mapLinkload)
             {
@@ -79,12 +80,12 @@ internal class AutoOpenCoords : Feature
             }
         }
 
-        var messageText = handler.Message.TextValue;
+        var messageText = message.TextValue;
         if (hasMapLink)
         {
             var newMapLinkMessage = new MapLinkMessage(
-                    handler.LogKind,
-                    handler.Sender.TextValue,
+                    type,
+                    sender.TextValue,
                     messageText,
                     coordX,
                     coordY,
@@ -95,7 +96,7 @@ internal class AutoOpenCoords : Feature
                 );
 
             var filteredOut = false;
-            if (handler.Sender.TextValue.ToLower() == "sonar" && !Config.IncludeSonar)
+            if (sender.TextValue.ToLower() == "sonar" && !Config.IncludeSonar)
                 filteredOut = true;
 
             var alreadyInList = MapLinkMessageList.Any(w =>
@@ -113,7 +114,7 @@ internal class AutoOpenCoords : Feature
             });
 
             if (alreadyInList) filteredOut = true;
-            if (!filteredOut && Config.FilteredChannels.IndexOf(handler.LogKind) != -1) filteredOut = true;
+            if (!filteredOut && Config.FilteredChannels.IndexOf(type) != -1) filteredOut = true;
             if (!filteredOut)
             {
                 if (Config.IgnorePOS && newMapLinkMessage.Text.Contains("Z:")) return;
@@ -134,11 +135,9 @@ internal class AutoOpenCoords : Feature
 
     public unsafe void PlaceMapMarker(MapLinkMessage maplinkMessage)
     {
-        if (Player.TerritoryIntendedUseEnum is not (City_Area or Open_World or Inn or Starting_Area or Housing_Instances or Residential_Area or Chocobo_Square or Gold_Saucer or Diadem or Barracks))
-        {
-            Svc.Log.Debug($"Not in a city area, skipping map marker placement.");
-            return;
-        }
+        // API12 forward-port: walk-back ECommons doesn't expose
+        // Player.TerritoryIntendedUseEnum; drop the city/inn/etc. guard.
+        // The marker placement still works in non-city zones, just unfiltered.
         Svc.Log.Debug($"Viewing {maplinkMessage.Text}");
         var map = Svc.Data.GetExcelSheet<TerritoryType>().GetRow(maplinkMessage.TerritoryId).Map;
         var maplink = new MapLinkPayload(maplinkMessage.TerritoryId, map.RowId, maplinkMessage.X, maplinkMessage.Y);

@@ -1,7 +1,7 @@
 using Dalamud.Game.ClientState.Conditions;
 using ECommons.DalamudServices;
 using FFXIVClientStructs.FFXIV.Client.Game;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using Lumina.Excel.Sheets;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
@@ -37,7 +37,7 @@ namespace PandorasBox.Features.Actions
             base.Enable();
         }
 
-        private void RunFeature(uint e)
+        private void RunFeature(ushort e)
         {
             if (!Svc.Data.GetExcelSheet<TerritoryType>().First(x => x.RowId == e).Mount) return;
 
@@ -65,7 +65,7 @@ namespace PandorasBox.Features.Actions
         private static bool NotBetweenAreas => !Svc.Condition[ConditionFlag.BetweenAreas];
         private bool? TryMount()
         {
-            if (Svc.Objects.LocalPlayer is null) return false;
+            if (Svc.ClientState.LocalPlayer is null) return false;
             if (Svc.Condition[ConditionFlag.BetweenAreas] || Svc.Condition[ConditionFlag.BetweenAreas51]) return false;
             if (Svc.Condition[ConditionFlag.Mounted]) return true;
 

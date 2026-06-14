@@ -30,7 +30,7 @@ namespace PandorasBox.Features.UI
 
         private unsafe void ReenableNodes(AddonEvent type, AddonArgs args)
         {
-            var list = ((AtkUnitBase*)args.Addon.Address)->GetNodeById(11)->GetAsAtkComponentTreeList();
+            var list = ((AtkUnitBase*)args.Addon)->GetNodeById(11)->GetAsAtkComponentTreeList();
             for (int i = 0; i <= 32; i++)
             {
                 try
@@ -51,7 +51,7 @@ namespace PandorasBox.Features.UI
             try
             {
                 var ins = AgentMiragePrismPrismBox.Instance();
-                var list = ((AtkUnitBase*)args.Addon.Address)->GetNodeById(11)->GetAsAtkComponentTreeList();
+                var list = ((AtkUnitBase*)args.Addon)->GetNodeById(11)->GetAsAtkComponentTreeList();
                 var prismList = ins->Data->PrismBoxItems.ToArray();
                 var catalystList = ins->Data->CrystallizeItems.ToArray().Where(x => x.ItemId > 0).Select(x => x.ItemId > 1_000_000 ? x.ItemId - 1_000_000 : x.ItemId).Take(ins->Data->CrystallizeItemCount);
 

@@ -1,7 +1,7 @@
 using Dalamud.Game.ClientState.Objects.Enums;
 using Dalamud.Game.ClientState.Objects.Types;
 using ECommons.DalamudServices;
-using Dalamud.Bindings.ImGui;
+using ImGuiNET;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
 using System;
@@ -58,12 +58,12 @@ namespace PandorasBox.Features.Targets
 
         public bool CanConeAoe()
         {
-            var playerObj = Svc.Objects.LocalPlayer;
+            var playerObj = Svc.ClientState.LocalPlayer;
             if (playerObj is null)
                 return false;
 
             return Svc.Objects.Any(o => o.ObjectKind == ObjectKind.BattleNpc &&
-                                    o.Struct()->BattleNpcSubKind == FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind.Combatant &&
+                                    (BattleNpcSubKind)o.SubKind == BattleNpcSubKind.Enemy &&
                                     o.IsTargetable &&
                                     PointInCone(o.Position - playerObj.Position, playerObj.Rotation, 0 + (o.HitboxRadius / 2)) &&
                                     PointInCircle(o.Position - playerObj.Position, Config.MaxDistance + o.HitboxRadius));
@@ -73,10 +73,10 @@ namespace PandorasBox.Features.Targets
         {
             if (CanConeAoe())
             {
-                var playerObj = Svc.Objects.LocalPlayer!;
+                var playerObj = Svc.ClientState.LocalPlayer!;
 
                 var target = Svc.Objects.OrderBy(GameObjectHelper.GetTargetDistance).First(o => o.ObjectKind == ObjectKind.BattleNpc &&
-                                                o.Struct()->BattleNpcSubKind == FFXIVClientStructs.FFXIV.Client.Game.Object.BattleNpcSubKind.Combatant &&
+                                                (BattleNpcSubKind)o.SubKind == BattleNpcSubKind.Enemy &&
                                                 o.IsTargetable &&
                                                 PointInCone(o.Position - playerObj.Position, playerObj.Rotation, 0 + (o.HitboxRadius / 2)) &&
                                                 PointInCircle(o.Position - playerObj.Position, Config.MaxDistance + o.HitboxRadius));
