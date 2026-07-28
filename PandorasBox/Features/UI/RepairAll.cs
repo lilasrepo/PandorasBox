@@ -4,7 +4,7 @@
 //using ECommons.UIHelpers.AddonMasterImplementations;
 //using FFXIVClientStructs.FFXIV.Client.UI;
 //using FFXIVClientStructs.FFXIV.Component.GUI;
-//using ImGuiNET;
+//using Dalamud.Bindings.ImGui;
 //using Lumina.Excel.Sheets;
 //using PandorasBox.FeaturesSetup;
 //using PandorasBox.Helpers;
@@ -215,7 +215,7 @@
 //            P.Ws.RemoveWindow(window);
 //            if (Svc.GameGui.GetAddonByName("Repair", 1) != IntPtr.Zero)
 //            {
-//                var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Repair", 1);
+//                var ptr = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Repair", 1).Address;
 
 //                var node = ptr->UldManager.NodeList[24];
 

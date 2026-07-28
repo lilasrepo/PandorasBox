@@ -26,7 +26,7 @@ namespace PandorasBox.Features.UI
 
         private void PreventCloseEvent(AddonEvent type, AddonArgs args)
         {
-            var addon = (AtkUnitBase*)args.Addon;
+            var addon = (AtkUnitBase*)args.Addon.Address;
             addon->Flags1B4 |= 0x16;
             // TODO(api12): AtkUnitBase.DisableFocusability is a game-7.5 field, not in TC 7.1 dll
             // addon->DisableFocusability = true;

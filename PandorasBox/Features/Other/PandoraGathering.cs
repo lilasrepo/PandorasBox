@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Conditions;
@@ -250,7 +250,7 @@ namespace PandorasBox.Features.Other
 
         private void UpdateIntegrity(IFramework framework)
         {
-            var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering");
+            var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering").Address;
             if (addon != null)
             {
                 CurrentIntegrity = addon->AtkValues[109].UInt;
@@ -278,7 +278,7 @@ namespace PandorasBox.Features.Other
             Svc.Chat.ChatMessage -= CheckRevisit;
             Svc.Framework.Update -= UpdateIntegrity;
 
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
             if (addon != null)
             {
                 addon->GetNodeById(38)->ToggleVisibility(true);
@@ -302,7 +302,7 @@ namespace PandorasBox.Features.Other
         {
             if (Svc.GameGui.GetAddonByName("Gathering") != nint.Zero)
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
                 if (addon == null) return;
                 if (!addon->IsVisible) return;
 
@@ -507,7 +507,7 @@ namespace PandorasBox.Features.Other
         {
             try
             {
-                var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
+                var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
 
                 if (addon != null && Config.Gathering)
                 {
@@ -593,7 +593,7 @@ namespace PandorasBox.Features.Other
                 TaskManager.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
                 TaskManager.Enqueue(() =>
                 {
-                    var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
+                    var addon = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
 
                     if (addon == null) return;
 
@@ -857,7 +857,7 @@ namespace PandorasBox.Features.Other
             TaskManager!.Enqueue(() => !Svc.Condition[ConditionFlag.ExecutingGatheringAction]);
             TaskManager.Enqueue(() =>
             {
-                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering");
+                var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("Gathering").Address;
                 if (addon is null) return;
 
                 if (addon is null) return;
@@ -1082,7 +1082,7 @@ namespace PandorasBox.Features.Other
         private void QuickGatherToggle(AddonGathering* thisPtr)
         {
             if (thisPtr == null && Svc.GameGui.GetAddonByName("Gathering") != nint.Zero)
-                thisPtr = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1);
+                thisPtr = (AddonGathering*)Svc.GameGui.GetAddonByName("Gathering", 1).Address;
 
             thisPtr->QuickGatheringComponentCheckBox->AtkComponentButton.Flags ^= 0x40000;
             // quickGatherToggle?.Original(thisPtr);  // API12 forward-port: stubbed (game-7.5)

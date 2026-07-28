@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Game.Addon.Lifecycle;
 using Dalamud.Game.Addon.Lifecycle.AddonArgTypes;
 using Dalamud.Game.ClientState.Party;
@@ -94,11 +94,11 @@ public class AutoVoteMvp : Feature
     private unsafe void OnBannerSetup(AddonEvent type, AddonArgs args)
     {
         if (Svc.ClientState.IsPvP) return;
-        var atk = (AtkUnitBase*)args.Addon;
+        var atk = (AtkUnitBase*)args.Addon.Address;
         try
         {
             if (ChoosePlayer(atk) is not -1 and var playerIndex)
-                VoteBanner((AtkUnitBase*)args.Addon, playerIndex);
+                VoteBanner((AtkUnitBase*)args.Addon.Address, playerIndex);
         }
         catch (Exception e)
         {

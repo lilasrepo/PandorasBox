@@ -1,7 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Numerics;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using Dalamud.Hooking;
 using ECommons.DalamudServices;
 using ECommons.ImGuiMethods;
@@ -162,7 +162,7 @@ namespace PandorasBox.Features.UI
         private bool? CloseResults()
         {
             if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied]) return false;
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageResult", 1);
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageResult", 1).Address;
             if (addon == null || !addon->IsVisible) return false;
             addon->Close(true);
             return true;
@@ -171,7 +171,7 @@ namespace PandorasBox.Features.UI
         private bool? ConfirmDesynth()
         {
             if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied]) return false;
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageDialog", 1);
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageDialog", 1).Address;
             if (addon == null || !addon->IsVisible) return false;
             ECommons.Automation.Callback.Fire(addon, false, 0, false);
             return Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied39];
@@ -180,7 +180,7 @@ namespace PandorasBox.Features.UI
         private static bool? DesynthFirst()
         {
             if (Svc.Condition[Dalamud.Game.ClientState.Conditions.ConditionFlag.Occupied]) return false;
-            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageItemSelector", 1);
+            var addon = (AtkUnitBase*)Svc.GameGui.GetAddonByName("SalvageItemSelector", 1).Address;
             if (addon == null) return null;
             ECommons.Automation.Callback.Fire(addon, false, 12, 0);
             return true;

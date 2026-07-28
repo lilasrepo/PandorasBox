@@ -8,7 +8,7 @@
 
     <PropertyGroup>
         <Authors>Puni.sh</Authors>
-        <Version>1.6.4.3</Version>
+        <Version>1.6.4.4</Version>
         <LangVersion>preview</LangVersion>
         <TargetFramework>net9.0-windows</TargetFramework>
     </PropertyGroup>
@@ -24,7 +24,7 @@
         <OutputPath>$(DalamudDevPlugins)</OutputPath>
     </PropertyGroup>
   <PropertyGroup>
-    <DalamudLibPath>$(MSBuildThisFileDirectory)..\..\..\TC_ok\_dalamud_api12\</DalamudLibPath>
+    <DalamudLibPath>$(MSBuildThisFileDirectory)..\..\..\TC_ok\_dalamud_api13\</DalamudLibPath>
     <!-- ship NuGet PackageReference dlls (NAudio.* etc.); Dalamud refs use <Private>false</Private> -->
     <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
   </PropertyGroup>
@@ -47,7 +47,7 @@
             <Private>false</Private>
             <HintPath>$(DalamudLibPath)\JetBrains.Annotations.dll</HintPath>
         </Reference>
-        <PackageReference Update="DalamudPackager" Version="13.0.0" />
+        <PackageReference Update="DalamudPackager" Version="13.1.0" />
     </ItemGroup>
 
     <ItemGroup>
@@ -76,7 +76,7 @@
         <ProjectReference Include="..\PunishLib\PunishLib\PunishLib.csproj" />
     </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="DalamudPackager" Version="2.1.13" />
+    <PackageReference Include="DalamudPackager" Version="13.1.0" />
   </ItemGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
@@ -91,8 +91,8 @@
       <HintPath>$(DalamudLibPath)Dalamud.Common.dll</HintPath>
       <Private>false</Private>
     </Reference>
-    <Reference Include="ImGui.NET">
-      <HintPath>$(DalamudLibPath)ImGui.NET.dll</HintPath>
+    <Reference Include="Dalamud.Bindings.ImGui">
+      <HintPath>$(DalamudLibPath)Dalamud.Bindings.ImGui.dll</HintPath>
       <Private>false</Private>
     </Reference>
     <Reference Include="Lumina">

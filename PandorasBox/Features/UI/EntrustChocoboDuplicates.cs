@@ -6,7 +6,7 @@ using FFXIVClientStructs.FFXIV.Client.System.Framework;
 using FFXIVClientStructs.FFXIV.Client.UI;
 using FFXIVClientStructs.FFXIV.Client.UI.Agent;
 using FFXIVClientStructs.FFXIV.Component.GUI;
-using ImGuiNET;
+using Dalamud.Bindings.ImGui;
 using PandorasBox.FeaturesSetup;
 using PandorasBox.Helpers;
 using PandorasBox.UI;
@@ -44,7 +44,7 @@ namespace PandorasBox.Features.UI
         }
         public override void Draw()
         {
-            var addon = (AddonInventoryBuddy*)Svc.GameGui.GetAddonByName("InventoryBuddy");
+            var addon = (AddonInventoryBuddy*)Svc.GameGui.GetAddonByName("InventoryBuddy").Address;
             if (addon != null && addon->AtkUnitBase.IsVisible && addon->IsFullyLoaded())
             {
                 var node = addon->AtkUnitBase.GetNodeById(83);
@@ -124,8 +124,8 @@ namespace PandorasBox.Features.UI
         private static void FireInventoryMenu(InventoryType inventory, InventoryItem* item, int eventId)
         {
             var ag = AgentInventoryContext.Instance();
-            ag->OpenForItemSlot((uint)inventory, item->Slot,0, AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId());
-            var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1);
+            ag->OpenForItemSlot(inventory, item->Slot,0, AgentModule.Instance()->GetAgentByInternalId(AgentId.Inventory)->GetAddonId());
+            var contextMenu = (AtkUnitBase*)Svc.GameGui.GetAddonByName("ContextMenu", 1).Address;
             if (contextMenu == null) return;
 
             for (int e = 0; e <= contextMenu->AtkValuesCount; e++)

@@ -119,7 +119,8 @@ namespace PandorasBox.Features.UI
                     for (var i = 1; i < item.Count(); i++)
                     {
                         var slot = item.ToList()[i];
-                        inv->MoveItemSlot(slot.Container, (ushort)slot.Slot, firstSlot.Container, (ushort)firstSlot.Slot, 1);
+                        // api13 FFXIVClientStructs: MoveItemSlot's 5th parameter is bool, was byte/int
+                        inv->MoveItemSlot(slot.Container, (ushort)slot.Slot, firstSlot.Container, (ushort)firstSlot.Slot, true);
                     }
                 }
 
