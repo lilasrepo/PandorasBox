@@ -46,8 +46,7 @@ namespace PandorasBox.Features.Commands
         private static void Reset(ulong GameObjectId)
         {
             Svc.Log.Information($"Resetting enmity {GameObjectId}");
-            // TODO(api12): GameMain.ExecuteCommand is a game-7.5-only static; TC 7.1 needs sig-scanned delegate (see TC_porting walk-back)
-            // Svc.Log.Debug($"Reset enmity of {GameObjectId} returned: {GameMain.ExecuteCommand(319, (int)GameObjectId)}");
+            Svc.Log.Debug($"Reset enmity of {GameObjectId} returned: {GameMain.ExecuteCommand(319, (int)GameObjectId)}");
         }
     }
 }
